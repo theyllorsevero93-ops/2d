@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Game</title>
+<style>
+body { margin:0; overflow:hidden; }
+canvas { display:block; background:#87CEEB; }
+
+.controls {
+  position:fixed;
+  bottom:20px;
+  left:20px;
+}
+
+.btn {
+  width:60px;
+  height:60px;
+  margin:5px;
+  background:rgba(0,0,0,0.5);
+  color:white;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="controls">
+  <button class="btn" ontouchstart="left=true" ontouchend="left=false">◀</button>
+  <button class="btn" ontouchstart="right=true" ontouchend="right=false">▶</button>
+  <button class="btn" ontouchstart="jump=true" ontouchend="jump=false">⬆</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let player = { x:100, y:100, w:30, h:30 };
+let velocityY = 0;
+let gravity = 0.5;
+let onGround = false;
+
+let left=false, right=false, jump=false;
+
+let blocks = [];
+
+for(let i=0;i<20;i++){
+  blocks.push({x:i*40,y:canvas.height-40});
+}
+
+function update(){
+
+  if(left) player.x -= 5;
+  if(right) player.x += 5;
+
+  if(jump && onGround){
+    velocityY = -10;
+    onGround = false;
+  }
+
+  velocityY += gravity;
+  player.y += velocityY;
+
+  onGround = false;
+
+  blocks.forEach(b=>{
+    if(player.x < b.x+40 &&
+       player.x+player.w > b.x &&
+       player.y < b.y+40 &&
+       player.y+player.h > b.y){
+
+        if(velocityY > 0){
+          player.y = b.y - player.h;
+          velocityY = 0;
+          onGround = true;
+        }
+    }
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle="green";
+  blocks.forEach(b=>{
+    ctx.fillRect(b.x,b.y,40,40);
+  });
+
+  ctx.fillStyle="red";
+  ctx.fillRect(player.x,player.y,30,30);
+}
+
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
